@@ -7,6 +7,8 @@ from cnn import CNN
 from net_manager import NetManager
 from reinforce import Reinforce
 
+from nlp.data import Synthetic
+from torch.utils.data import DataLoader
 from tensorflow.examples.tutorials.mnist import input_data
 
 def parse_args():
@@ -45,7 +47,7 @@ def policy_network(state, max_layers):
         #return tf.slice(outputs, [0, 4*max_layers-1, 0], [1, 1, 4*max_layers]) # Returned last output of rnn
         return outputs[:, -1:, :]      
 
-def train(mnist):
+def train(traindata, testdata):
     global args
     sess = tf.Session()
     global_step = tf.Variable(0, trainable=False)
@@ -56,11 +58,12 @@ def train(mnist):
     optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 
     reinforce = Reinforce(sess, optimizer, policy_network, args.max_layers, global_step)
-    net_manager = NetManager(num_input=784,
-                             num_classes=10,
+    net_manager = NetManager(num_input=1500,
+                             num_classes=1,
                              learning_rate=0.001,
-                             mnist=mnist,
-                             bathc_size=100)
+                             train=traindata,
+                             test=testdata,
+                             batch_size=100)
 
     MAX_EPISODES = 2500
     step = 0
@@ -92,10 +95,9 @@ def train(mnist):
 def main():
     global args
     args = parse_args()
-
-    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-    print(f'\n\nmnist: {mnist}\n\n')
-    train(mnist)
+    traindata = Synthetic("/home/ygx/data", "train", target=0)
+    testdata = Synthetic("/home/ygx/data", "test", target=0)
+    train(traindata, testdata)
 
 if __name__ == '__main__':
   main()
