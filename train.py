@@ -94,6 +94,7 @@ def main():
     args = parse_args()
 
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+    print(f'\n\nmnist: {mnist}\n\n')
     train(mnist)
 
 if __name__ == '__main__':
